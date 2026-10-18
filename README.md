@@ -117,6 +117,24 @@ An order can contain items from one restaurant only. The server reads prices fro
 
 Status updates must follow `ASSIGNED → PICKED_UP → OUT_FOR_DELIVERY → DELIVERED`. A partner cannot update another partner's delivery.
 
+## End-to-end walkthrough
+
+Use Postman with the base URL http://localhost:8080. For protected requests, choose **Authorization → Basic Auth** and use the account for the role listed below. Substitute the IDs returned by earlier requests.
+
+1. **Admin:** Create a restaurant with **POST /api/admin/restaurants**, using the restaurant request example above. Save its id.
+2. **Admin:** Add a food item with **POST /api/admin/restaurants/{restaurantId}/items**, using the food item example above. Save its id.
+3. **Admin:** Create a delivery partner with **POST /api/admin/partners**. Save the partner's email and password for partner requests.
+4. **Customer:** Register with **POST /api/auth/register**, then use that email and password for customer requests.
+5. **Public/customer:** Browse **GET /api/restaurants/{restaurantId}/items** and confirm the food item is listed.
+6. **Customer:** Place an order with **POST /api/orders**, using the saved food item ID and a delivery address. Save the returned order id.
+7. **Admin:** Assign the order with **PUT /api/admin/orders/{orderId}/assignment** and body {"partnerId": 1} (replace 1 with the created partner's ID).
+8. **Partner:** View assignments with **GET /api/partner/deliveries**. Advance the assigned order with **PATCH /api/partner/deliveries/{orderId}/status**, sending these bodies in order:
+   - {"status":"PICKED_UP"}
+   - {"status":"OUT_FOR_DELIVERY"}
+   - {"status":"DELIVERED"}
+9. **Customer:** Check **GET /api/orders/mine** and confirm the order status is DELIVERED.
+
 ## MVP boundaries
 
 This project currently has no payment processing, customer cancellation, delivery fee/tax calculation, image uploads, JWT/refresh-token flow, pagination, or frontend. HTTP Basic is intended for local API practice; production deployment needs HTTPS, managed secrets, database migrations, and additional operational controls.
+
